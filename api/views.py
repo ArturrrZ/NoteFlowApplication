@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Note
+from .serializers import NoteSerializer
 # Create your views here.
 
 def old(request):
@@ -15,5 +16,7 @@ def index(request):
 
 @api_view(["GET"])
 def notes(request):
-    notes=Note.objects.all()
-    return Response(notes)
+    # notes=Note.objects.all().values("title","body")
+    all_notes=Note.objects.all()
+    serializer=NoteSerializer(all_notes,many=True)
+    return Response(serializer.data)
