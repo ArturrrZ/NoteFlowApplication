@@ -36,6 +36,9 @@ def note(request,id):
 
 @csrf_exempt
 def edit_note(request,id):
+    # serializer = NoteSerializer(instance=note, data=body)
+    # if serializer.is_valid():
+    #     serializer.save()
     if request.method == 'PUT':
         # remove from cart
         data = json.loads(request.body)
