@@ -1,5 +1,5 @@
 import json
-
+from django.http import JsonResponse
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -34,7 +34,7 @@ def note(request,id):
     serializer=NoteSerializer(note,many=False)
     return Response(serializer.data)
 
-@csrf_exempt
+@api_view(["PUT"])
 def edit_note(request,id):
     # serializer = NoteSerializer(instance=note, data=body)
     # if serializer.is_valid():
@@ -43,15 +43,13 @@ def edit_note(request,id):
         # remove from cart
         data = json.loads(request.body)
         body=data.get("body")
+        title=data.get('title')
         if body is not None:
             try:
-                # Find the note by id
                 note = Note.objects.get(pk=id)
-                # Update the body of the note
                 note.body = body
-                # Save the changes to the database
+                note.title=title
                 note.save()
-                # Return a success response
                 return JsonResponse({"success": "Note updated successfully"}, status=200)
             except ObjectDoesNotExist:
                 # If the note does not exist, return an error response
@@ -61,3 +59,26 @@ def edit_note(request,id):
             return JsonResponse({"error": "No body provided"}, status=400)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@api_view(["POST"])
+def create_note(request):
+    data=json.loads(request.body)
+    note=Note.objects.create(
+        title=data["note"]["title"],
+        body=data["note"]["body"]
+    )
+    notes = Note.objects.all()
+    serializerr = NoteSerializer(notes, many=True)
+    return Response(serializerr.data, status=200)
+
+@api_view(["DELETE"])
+def delete_note(request,id):
+    try:
+        note=Note.objects.all().get(pk=id)
+    except ObjectDoesNotExist:
+        return Response("forbidden",status=404)
+    note.delete()
+    notes=Note.objects.all()
+    serializerr=NoteSerializer(notes,many=True)
+    return Response(serializerr.data,status=200)
