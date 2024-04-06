@@ -21,7 +21,7 @@ def index(request):
 @api_view(["GET"])
 def notes(request):
     # notes=Note.objects.all().values("title","body")
-    all_notes=Note.objects.all()
+    all_notes=Note.objects.all().order_by("-updated")
     serializer=NoteSerializer(all_notes,many=True)
     return Response(serializer.data)
 
@@ -36,17 +36,17 @@ def note(request,id):
 
 @api_view(["PUT"])
 def edit_note(request,id):
+        print(id)
     # serializer = NoteSerializer(instance=note, data=body)
     # if serializer.is_valid():
     #     serializer.save()
-    if request.method == 'PUT':
-        # remove from cart
+    # remove from cart
         data = json.loads(request.body)
         body=data.get("body")
         title=data.get('title')
         if body is not None:
             try:
-                note = Note.objects.get(pk=id)
+                note = Note.objects.all().get(pk=id)
                 note.body = body
                 note.title=title
                 note.save()
@@ -58,7 +58,7 @@ def edit_note(request,id):
             # If body is not provided in the request, return an error response
             return JsonResponse({"error": "No body provided"}, status=400)
 
-    return JsonResponse({"error": "Invalid request method"}, status=405)
+
 
 
 @api_view(["POST"])
@@ -68,7 +68,7 @@ def create_note(request):
         title=data["note"]["title"],
         body=data["note"]["body"]
     )
-    notes = Note.objects.all()
+    notes = Note.objects.all().order_by("-updated")
     serializerr = NoteSerializer(notes, many=True)
     return Response(serializerr.data, status=200)
 
